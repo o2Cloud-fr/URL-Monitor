@@ -1,0 +1,58 @@
+{
+  "name": "url-monitor",
+  "version": "1.0.0",
+  "description": "Application de monitoring d'URLs avec design Apple/macOS",
+  "main": "main.js",
+"scripts": {
+  "start": "electron .",
+  "dev": "electron . --dev",
+  "build": "electron-builder",
+  "build-win": "electron-builder --win",
+  "build-linux": "electron-builder --linux",
+  "pack": "electron-builder --dir",
+  "dist": "electron-builder"
+},
+  "keywords": [
+    "electron",
+    "url-monitor",
+    "http-status",
+    "monitoring"
+  ],
+  "author": "o2Cloud",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^27.0.0",
+    "electron-builder": "^24.6.4"
+  },
+  "dependencies": {
+    "axios": "^1.6.0",
+    "cheerio": "^1.0.0-rc.12"
+  },
+  "build": {
+    "appId": "fr.o2cloud.urlmonitor",
+    "productName": "URL Monitor",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "renderer.html",
+      "renderer.js",
+      "styles.css",
+      "package.json"
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": "assets/icon.ico"
+    },
+    "mac": {
+      "target": "dmg",
+      "icon": "assets/icon.icns"
+    },
+    "linux": {
+      "target": "AppImage",
+      "icon": "assets/icon.png"
+    }
+  }
+}

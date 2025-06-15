@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>URL Monitor</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#007AFF',
+                        secondary: '#5856D6',
+                        success: '#34C759',
+                        warning: '#FF9500',
+                        error: '#FF3B30',
+                        gray: {
+                            50: '#f9fafb',
+                            100: '#f3f4f6',
+                            200: '#e5e7eb',
+                            300: '#d1d5db',
+                            400: '#9ca3af',
+                            500: '#6b7280',
+                            600: '#4b5563',
+                            700: '#374151',
+                            800: '#1f2937',
+                            900: '#111827'
+                        }
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.5s ease-out',
+                        'fade-out': 'fadeOut 0.3s ease-in',
+                        'slide-up': 'slideUp 0.3s ease-out',
+                        'pulse-slow': 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'theme-switch': 'themeSwitch 0.3s ease-in-out',
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0', transform: 'translateY(20px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' }
+                        },
+                        fadeOut: {
+                            '0%': { opacity: '1' },
+                            '100%': { opacity: '0' }
+                        },
+                        slideUp: {
+                            '0%': { transform: 'translateY(100%)' },
+                            '100%': { transform: 'translateY(0)' }
+                        },
+                        themeSwitch: {
+                            '0%': { transform: 'scale(1)' },
+                            '50%': { transform: 'scale(0.95)' },
+                            '100%': { transform: 'scale(1)' }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 min-h-screen transition-colors duration-300">
+    <!-- Barre de titre moderne -->
+    <div class="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-b border-gray-200/50 dark:border-gray-700/50 p-4 sticky top-0 z-50 transition-colors duration-300">
+        <div class="max-w-7xl mx-auto flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="flex gap-2">
+                    <div class="w-3 h-3 bg-red-500 rounded-full"></div>
+                    <div class="w-3 h-3 bg-yellow-500 rounded-full"></div>
+                    <div class="w-3 h-3 bg-green-500 rounded-full"></div>
+                </div>
+                <h1 class="text-xl font-bold text-gray-900 dark:text-white ml-4 transition-colors duration-300">URL Monitor</h1>
+            </div>
+            <div class="flex items-center gap-4">
+                <div class="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
+                    <div class="flex items-center gap-2">
+                        <div class="flex items-center gap-1">
+                            <div class="w-2 h-2 bg-green-500 rounded-full"></div>
+                            <span id="statusCount2xx">0</span>
+                        </div>
+                        <div class="flex items-center gap-1">
+                            <div class="w-2 h-2 bg-orange-500 rounded-full"></div>
+                            <span id="statusCount4xx">0</span>
+                        </div>
+                        <div class="flex items-center gap-1">
+                            <div class="w-2 h-2 bg-red-500 rounded-full"></div>
+                            <span id="statusCount5xx">0</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Sélecteur de thème -->
+                <div class="flex items-center gap-2 p-1 bg-gray-200 dark:bg-gray-700 rounded-lg transition-colors duration-300">
+                    <button id="lightTheme" class="p-2 rounded-md transition-all duration-200 hover:bg-white dark:hover:bg-gray-600" title="Mode clair">
+                        <svg class="w-4 h-4 text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clip-rule="evenodd"></path>
+                        </svg>
+                    </button>
+                    <button id="darkTheme" class="p-2 rounded-md transition-all duration-200 hover:bg-white dark:hover:bg-gray-600" title="Mode sombre">
+                        <svg class="w-4 h-4 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path>
+                        </svg>
+                    </button>
+                    <button id="systemTheme" class="p-2 rounded-md transition-all duration-200 hover:bg-white dark:hover:bg-gray-600" title="Système">
+                        <svg class="w-4 h-4 text-gray-600 dark:text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M3 5a2 2 0 012-2h10a2 2 0 012 2v8a2 2 0 01-2 2h-2.22l.123.489.804.804A1 1 0 0113 18H7a1 1 0 01-.707-1.707l.804-.804L7.22 15H5a2 2 0 01-2-2V5zm5.771 7H5V5h10v7H8.771z" clip-rule="evenodd"></path>
+                        </svg>
+                    </button>
+                </div>
+                
+                <button id="exportBtn" class="px-3 py-1 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-900 dark:text-white rounded-lg text-sm transition-colors duration-300">
+                    Export
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contenu principal -->
+    <div class="max-w-7xl mx-auto p-6 space-y-8">
+        <!-- Section d'ajout d'URL -->
+        <div class="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm rounded-3xl p-8 shadow-xl border border-white/20 dark:border-gray-700/20 transition-colors duration-300">
+            <div class="space-y-6">
+                <div class="flex flex-col sm:flex-row gap-4">
+                    <div class="flex-1">
+                        <input 
+                            type="url" 
+                            id="urlInput" 
+                            placeholder="https://example.com" 
+                            class="w-full px-6 py-4 bg-white/80 dark:bg-gray-700/80 border border-gray-200 dark:border-gray-600 rounded-2xl focus:outline-none focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 dark:focus:border-blue-400 transition-all duration-300 text-lg text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+                        >
+                    </div>
+                    <button 
+                        id="addUrlBtn" 
+                        class="px-8 py-4 bg-gradient-to-r from-blue-500 to-blue-600 dark:from-blue-600 dark:to-blue-700 text-white rounded-2xl hover:from-blue-600 hover:to-blue-700 dark:hover:from-blue-700 dark:hover:to-blue-800 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 flex items-center gap-3 font-semibold"
+                    >
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                        </svg>
+                        Ajouter URL
+                    </button>
+                </div>
+                
+                <div class="flex flex-col sm:flex-row gap-4">
+                    <button 
+                        id="monitorAllBtn" 
+                        class="px-6 py-3 bg-gradient-to-r from-green-500 to-green-600 dark:from-green-600 dark:to-green-700 text-white rounded-xl hover:from-green-600 hover:to-green-700 dark:hover:from-green-700 dark:hover:to-green-800 transition-all duration-300 shadow-md hover:shadow-lg transform hover:-translate-y-0.5 flex items-center gap-2 font-medium"
+                    >
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        Surveiller tout
+                    </button>
+                    <button 
+                        id="clearAllBtn" 
+                        class="px-6 py-3 bg-gradient-to-r from-red-500 to-red-600 dark:from-red-600 dark:to-red-700 text-white rounded-xl hover:from-red-600 hover:to-red-700 dark:hover:from-red-700 dark:hover:to-red-800 transition-all duration-300 shadow-md hover:shadow-lg transform hover:-translate-y-0.5 flex items-center gap-2 font-medium"
+                    >
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                        </svg>
+                        Effacer tout
+                    </button>
+                    <button 
+                        id="refreshAllBtn" 
+                        class="px-6 py-3 bg-gradient-to-r from-purple-500 to-purple-600 dark:from-purple-600 dark:to-purple-700 text-white rounded-xl hover:from-purple-600 hover:to-purple-700 dark:hover:from-purple-700 dark:hover:to-purple-800 transition-all duration-300 shadow-md hover:shadow-lg transform hover:-translate-y-0.5 flex items-center gap-2 font-medium"
+                    >
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                        </svg>
+                        Vérifier maintenant
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Liste des URLs -->
+        <div id="urlList" class="grid gap-6 lg:grid-cols-2">
+            <!-- Les éléments seront ajoutés dynamiquement -->
+        </div>
+
+        <!-- État vide -->
+        <div id="emptyState" class="text-center py-20">
+            <div class="inline-flex items-center justify-center w-24 h-24 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 rounded-full mb-6 transition-colors duration-300">
+                <svg class="w-12 h-12 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path>
+                </svg>
+            </div>
+            <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-3 transition-colors duration-300">Aucune URL à surveiller</h3>
+            <p class="text-gray-600 dark:text-gray-400 text-lg transition-colors duration-300">Ajoutez une URL ci-dessus pour commencer le monitoring</p>
+        </div>
+    </div>
+
+    <!-- Zone de notifications -->
+    <div id="notificationContainer" class="fixed top-4 right-4 z-50 space-y-2"></div>
+
+    <script>
+        // État de l'application
+        let urls = [];
+        let monitoringInterval = null;
+        let currentTheme = 'system';
+        let isDarkMode = false;
+        // Éléments du DOM
+        const urlInput = document.getElementById('urlInput');
+        const addUrlBtn = document.getElementById('addUrlBtn');
+        const monitorAllBtn = document.getElementById('monitorAllBtn');
+        const clearAllBtn = document.getElementById('clearAllBtn');
+        const refreshAllBtn = document.getElementById('refreshAllBtn');
+        const exportBtn = document.getElementById('exportBtn');
+        const urlList = document.getElementById('urlList');
+        const emptyState = document.getElementById('emptyState');
+        const lightThemeBtn = document.getElementById('lightTheme');
+        const darkThemeBtn = document.getElementById('darkTheme');
+        const systemThemeBtn = document.getElementById('systemTheme');
+
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', async () => {
+            setupEventListeners();
+            initializeTheme();
+            await loadUrls();
+            updateEmptyState();
+            updateStatusCounts();
+        });
+
+// Initialisation
+document.addEventListener('DOMContentLoaded', async function() {
+    // Charger le thème sauvegardé
+    const savedTheme = localStorage.getItem('theme') || 'system';
+    applyTheme(savedTheme);
+    
+    // Charger les URLs sauvegardées
+    await loadStoredUrls();
+    
+    // Initialiser les événements
+    initializeEventListeners();
+    
+    // Démarrer le monitoring automatique
+    startAutoMonitoring();
+});
+
+        // Initialisation du système de thèmes
+        function initializeTheme() {
+            // Charger le thème sauvegardé ou utiliser le système par défaut
+            const savedTheme = localStorage.getItem('urlMonitorTheme') || 'system';
+            setTheme(savedTheme);
+            
+            // Écouter les changements de préférence système
+            const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+            mediaQuery.addEventListener('change', (e) => {
+                if (currentTheme === 'system') {
+                    applyTheme(e.matches ? 'dark' : 'light');
+                }
+            });
+        }
+
+        // Définir le thème
+        function setTheme(theme) {
+            currentTheme = theme;
+            localStorage.setItem('urlMonitorTheme', theme);
+            
+            // Mettre à jour l'apparence des boutons de thème
+            updateThemeButtons();
+            
+            // Appliquer le thème
+            if (theme === 'system') {
+                const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                applyTheme(isDark ? 'dark' : 'light');
+            } else {
+                applyTheme(theme);
+            }
+        }
+
+        // Appliquer le thème
+        function applyTheme(theme) {
+            const html = document.documentElement;
+            
+            // Animation de transition
+            html.classList.add('animate-theme-switch');
+            
+            if (theme === 'dark') {
+                html.classList.add('dark');
+            } else {
+                html.classList.remove('dark');
+            }
+            
+            // Supprimer l'animation après la transition
+            setTimeout(() => {
+                html.classList.remove('animate-theme-switch');
+            }, 300);
+        }
+
+        // Mettre à jour l'apparence des boutons de thème
+        function updateThemeButtons() {
+            // Réinitialiser tous les boutons
+            [lightThemeBtn, darkThemeBtn, systemThemeBtn].forEach(btn => {
+                btn.classList.remove('bg-white', 'dark:bg-gray-600', 'shadow-sm');
+            });
+            
+            // Mettre en surbrillance le bouton actif
+            const activeBtn = currentTheme === 'light' ? lightThemeBtn : 
+                             currentTheme === 'dark' ? darkThemeBtn : systemThemeBtn;
+            activeBtn.classList.add('bg-white', 'dark:bg-gray-600', 'shadow-sm');
+        }
+
+        // Configuration des événements
+        function setupEventListeners() {
+            addUrlBtn.addEventListener('click', addUrl);
+            urlInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') addUrl();
+            });
+            monitorAllBtn.addEventListener('click', toggleMonitoring);
+            clearAllBtn.addEventListener('click', clearAllUrls);
+            refreshAllBtn.addEventListener('click', checkAllUrls);
+            exportBtn.addEventListener('click', exportData);
+            
+            // Événements pour les boutons de thème
+            lightThemeBtn.addEventListener('click', () => setTheme('light'));
+            darkThemeBtn.addEventListener('click', () => setTheme('dark'));
+            systemThemeBtn.addEventListener('click', () => setTheme('system'));
+        }
+
+        // Simuler l'API Electron pour les tests web
+        if (typeof window.electronAPI === 'undefined') {
+            window.electronAPI = {
+                loadUrls: async () => {
+                    const saved = localStorage.getItem('urlMonitorUrls');
+                    return saved ? JSON.parse(saved) : [];
+                },
+                saveUrls: async (urls) => {
+                    localStorage.setItem('urlMonitorUrls', JSON.stringify(urls));
+                    return { success: true };
+                },
+                monitorUrl: async (url) => {
+                    // Simulation pour les tests
+                    await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 2000));
+                    const success = Math.random() > 0.3;
+                    return {
+                        status: success ? 200 : (Math.random() > 0.5 ? 404 : 500),
+                        title: success ? `Titre de ${new URL(url).hostname}` : 'Erreur',
+                        responseTime: Math.floor(100 + Math.random() * 2000),
+                        timestamp: new Date().toISOString(),
+                        success: success,
+                        error: success ? null : 'Erreur simulée'
+                    };
+                },
+                monitorUrls: async (urls) => {
+                    return Promise.all(urls.map(url => window.electronAPI.monitorUrl(url)));
+                },
+                exportData: async () => {
+                    return { success: true, path: '/tmp/export-' + Date.now() + '.json' };
+                }
+            };
+        }
+
+        // Charger les URLs sauvegardées
+        async function loadUrls() {
+            try {
+                const savedUrls = await window.electronAPI.loadUrls();
+                urls = savedUrls.map(urlData => ({
+                    id: Date.now() + Math.random(),
+                    url: urlData.url || urlData,
+                    status: urlData.status || null,
+                    title: urlData.title || null,
+                    responseTime: urlData.responseTime || null,
+                    lastCheck: urlData.lastCheck || null,
+                    error: urlData.error || null
+                }));
+                renderUrlList();
+                showNotification(`${urls.length} URL(s) chargée(s)`, 'success');
+            } catch (error) {
+                console.error('Erreur lors du chargement:', error);
+                showNotification('Erreur lors du chargement des URLs', 'error');
+            }
+        }
+
+        // Sauvegarder les URLs
+        async function saveUrls() {
+            try {
+                const urlsToSave = urls.map(item => ({
+                    url: item.url,
+                    status: item.status,
+                    title: item.title,
+                    responseTime: item.responseTime,
+                    lastCheck: item.lastCheck,
+                    error: item.error
+                }));
+                
+                const result = await window.electronAPI.saveUrls(urlsToSave);
+                if (!result.success) {
+                    throw new Error(result.error);
+                }
+            } catch (error) {
+                console.error('Erreur lors de la sauvegarde:', error);
+                showNotification('Erreur lors de la sauvegarde', 'error');
+            }
+        }
+
+        // Ajouter une nouvelle URL
+        async function addUrl() {
+            const url = urlInput.value.trim();
+            
+            if (!url) {
+                showNotification('Veuillez entrer une URL', 'error');
+                return;
+            }
+
+            if (!isValidUrl(url)) {
+                showNotification('URL invalide', 'error');
+                return;
+            }
+
+            if (urls.some(item => item.url === url)) {
+                showNotification('Cette URL est déjà surveillée', 'warning');
+                return;
+            }
+
+            const urlItem = {
+                id: Date.now() + Math.random(),
+                url: url,
+                status: null,
+                title: null,
+                responseTime: null,
+                lastCheck: null,
+                error: null
+            };
+
+            urls.push(urlItem);
+            urlInput.value = '';
+            
+            await saveUrls();
+            
+            renderUrlList();
+            updateEmptyState();
+            updateStatusCounts();
+            
+            checkUrl(urlItem);
+            
+            showNotification('URL ajoutée avec succès', 'success');
+        }
+
+        // Valider une URL
+        function isValidUrl(string) {
+            try {
+                const url = new URL(string);
+                return url.protocol === 'http:' || url.protocol === 'https:';
+            } catch (_) {
+                return false;
+            }
+        }
+
+        // Vérifier une URL
+        async function checkUrl(urlItem) {
+            const element = document.querySelector(`[data-id="${urlItem.id}"]`);
+            if (element) {
+                const spinner = element.querySelector('.loading-spinner');
+                if (spinner) spinner.classList.remove('hidden');
+            }
+
+            try {
+                const result = await window.electronAPI.monitorUrl(urlItem.url);
+                
+                urlItem.status = result.status;
+                urlItem.title = result.title;
+                urlItem.responseTime = result.responseTime;
+                urlItem.lastCheck = new Date(result.timestamp).toLocaleTimeString();
+                urlItem.error = result.error;
+                urlItem.success = result.success;
+
+                renderUrlItem(urlItem);
+                updateStatusCounts();
+                
+                await saveUrls();
+                
+                const statusType = result.success ? 'success' : 'error';
+                const statusText = result.success ? `${result.status} - OK` : `${result.status} - ${result.error}`;
+                showNotification(`${new URL(urlItem.url).hostname}: ${statusText}`, statusType);
+                
+            } catch (error) {
+                urlItem.error = error.message;
+                urlItem.success = false;
+                renderUrlItem(urlItem);
+                updateStatusCounts();
+                showNotification(`Erreur: ${error.message}`, 'error');
+            }
+
+            if (element) {
+                const spinner = element.querySelector('.loading-spinner');
+                if (spinner) spinner.classList.add('hidden');
+            }
+        }
+
+        // Vérifier toutes les URLs
+        async function checkAllUrls() {
+            if (urls.length === 0) {
+                showNotification('Aucune URL à vérifier', 'warning');
+                return;
+            }
+
+            showNotification('Vérification en cours...', 'info');
+            
+            try {
+                const results = await window.electronAPI.monitorUrls(urls.map(u => u.url));
+                
+                results.forEach((result, index) => {
+                    if (urls[index]) {
+                        urls[index].status = result.status;
+                        urls[index].title = result.title;
+                        urls[index].responseTime = result.responseTime;
+                        urls[index].lastCheck = new Date(result.timestamp).toLocaleTimeString();
+                        urls[index].error = result.error;
+                        urls[index].success = result.success;
+                    }
+                });
+                
+                renderUrlList();
+                updateStatusCounts();
+                await saveUrls();
+                
+                const successCount = results.filter(r => r.success).length;
+                const errorCount = results.length - successCount;
+                showNotification(`Vérification terminée: ${successCount} OK, ${errorCount} erreurs`, 'success');
+                
+            } catch (error) {
+                console.error('Erreur lors de la vérification:', error);
+                showNotification('Erreur lors de la vérification groupée', 'error');
+            }
+        }
+
+        // Basculer le monitoring automatique
+        function toggleMonitoring() {
+            if (monitoringInterval) {
+                clearInterval(monitoringInterval);
+                monitoringInterval = null;
+                monitorAllBtn.innerHTML = `
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    Surveiller tout
+                `;
+                monitorAllBtn.className = "px-6 py-3 bg-gradient-to-r from-green-500 to-green-600 dark:from-green-600 dark:to-green-700 text-white rounded-xl hover:from-green-600 hover:to-green-700 dark:hover:from-green-700 dark:hover:to-green-800 transition-all duration-300 shadow-md hover:shadow-lg transform hover:-translate-y-0.5 flex items-center gap-2 font-medium";
+                showNotification('Surveillance automatique arrêtée', 'info');
+            } else {
+                if (urls.length === 0) {
+                    showNotification('Aucune URL à surveiller', 'warning');
+                    return;
+                }
+                
+                checkAllUrls();
+                monitoringInterval = setInterval(checkAllUrls, 30000);
+                monitorAllBtn.innerHTML = `
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    Arrêter
+                `;
+                monitorAllBtn.className = "px-6 py-3 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-xl hover:from-red-600 hover:to-red-700 transition-all duration-300 shadow-md hover:shadow-lg transform hover:-translate-y-0.5 flex items-center gap-2 font-medium";
+                showNotification('Surveillance automatique démarrée (30s)', 'success');
+            }
+        }
+
+        // Effacer toutes les URLs
+        async function clearAllUrls() {
+            if (urls.length === 0) {
+                showNotification('Aucune URL à supprimer', 'warning');
+                return;
+            }
+
+            if (!confirm('Êtes-vous sûr de vouloir supprimer toutes les URLs ?')) {
+                return;
+            }
+
+            if (monitoringInterval) {
+                clearInterval(monitoringInterval);
+                monitoringInterval = null;
+                monitorAllBtn.innerHTML = `
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    Surveiller tout
+                `;
+                monitorAllBtn.className = "px-6 py-3 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-xl hover:from-green-600 hover:to-green-700 transition-all duration-300 shadow-md hover:shadow-lg transform hover:-translate-y-0.5 flex items-center gap-2 font-medium";
+            }
+
+            urls = [];
+            await saveUrls();
+            renderUrlList();
+            updateEmptyState();
+            updateStatusCounts();
+            showNotification('Toutes les URLs ont été supprimées', 'success');
+        }
+
+        // Supprimer une URL spécifique
+        async function removeUrl(id) {
+            urls = urls.filter(item => item.id !== id);
+            await saveUrls();
+            renderUrlList();
+            updateEmptyState();
+            updateStatusCounts();
+            showNotification('URL supprimée', 'success');
+        }
+
+        // Exporter les données
+        async function exportData() {
+            try {
+                const result = await window.electronAPI.exportData();
+                if (result.success) {
+                    showNotification(`Données exportées: ${result.path}`, 'success');
+                } else {
+                    throw new Error(result.error);
+                }
+            } catch (error) {
+                console.error('Erreur lors de l\'export:', error);
+                showNotification('Erreur lors de l\'export', 'error');
+            }
+        }
+
+        // Mettre à jour les compteurs de statut
+        function updateStatusCounts() {
+            const count2xx = urls.filter(u => u.status >= 200 && u.status < 300).length;
+            const count4xx = urls.filter(u => u.status >= 400 && u.status < 500).length;
+            const count5xx = urls.filter(u => u.status >= 500).length;
+            
+            document.getElementById('statusCount2xx').textContent = count2xx;
+            document.getElementById('statusCount4xx').textContent = count4xx;
+            document.getElementById('statusCount5xx').textContent = count5xx;
+        }
+
+        // Rendu de la liste des URLs
+        function renderUrlList() {
+            urlList.innerHTML = '';
+            
+            urls.forEach(urlItem => {
+                const element = createUrlElement(urlItem);
+                urlList.appendChild(element);
+            });
+        }
+
+        // Rendu d'un élément URL spécifique
+        function renderUrlItem(urlItem) {
+            const existingElement = document.querySelector(`[data-id="${urlItem.id}"]`);
+            if (existingElement) {
+                const newElement = createUrlElement(urlItem);
+                existingElement.replaceWith(newElement);
+            }
+        }
+
+        // Créer un élément URL
+        function createUrlElement(urlItem) {
+            const div = document.createElement('div');
+            div.className = 'bg-white/70 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-white/20 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 animate-fade-in';
+            div.setAttribute('data-id', urlItem.id);
+            
+            const statusColor = getStatusColor(urlItem.status);
+            const statusText = urlItem.status ? urlItem.status.toString() : '---';
+            const titleText = urlItem.title || (urlItem.url ? new URL(urlItem.url).hostname : 'URL invalide');
+            const responseTimeText = urlItem.responseTime ? `${urlItem.responseTime}ms` : '---';
+            const lastCheckText = urlItem.lastCheck || 'Jamais';
+            
+            div.innerHTML = `
+                <div class="flex items-start justify-between mb-4">
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center gap-3 mb-2">
+                            <div class="w-3 h-3 ${statusColor} rounded-full ${urlItem.status ? '' : 'bg-gray-300'}"></div>
+                            <h3 class="text-lg font-semibold text-gray-900 truncate">${titleText}</h3>
+                        </div>
+                        <a href="${urlItem.url}" target="_blank" class="text-blue-600 hover:text-blue-800 text-sm break-all transition-colors duration-200">${urlItem.url}</a>
+                    </div>
+                    <div class="flex items-center gap-2 ml-4">
+                        <div class="px-3 py-1 bg-gray-100 rounded-full text-sm font-medium text-gray-700">
+                            ${statusText}
+                        </div>
+                        <button onclick="checkUrl(urls.find(u => u.id === ${urlItem.id}))" class="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-200">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                            </svg>
+                        </button>
+                        <button onclick="removeUrl(${urlItem.id})" class="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all duration-200">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-4 text-sm text-gray-600">
+                    <div class="flex items-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <span>Temps: ${responseTimeText}</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <span>Dernière vérif: ${lastCheckText}</span>
+                    </div>
+                </div>
+                
+${urlItem.error ? `
+                    <div class="mt-3 p-3 bg-red-50 rounded-lg border border-red-200">
+                        <div class="flex items-center gap-2 text-red-700 text-sm">
+                            <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.268 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                            </svg>
+                            <span class="font-medium">Erreur:</span>
+                            <span>${urlItem.error}</span>
+                        </div>
+                    </div>
+                ` : ''}
+                
+                <div class="loading-spinner hidden mt-4">
+                    <div class="flex items-center justify-center gap-2">
+                        <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                        <span class="text-sm text-gray-600">Vérification en cours...</span>
+                    </div>
+                </div>
+            `;
+            
+            return div;
+        }
+
+        // Obtenir la couleur de statut
+        function getStatusColor(status) {
+            if (!status) return 'bg-gray-300';
+            if (status >= 200 && status < 300) return 'bg-green-500';
+            if (status >= 300 && status < 400) return 'bg-yellow-500';
+            if (status >= 400 && status < 500) return 'bg-orange-500';
+            if (status >= 500) return 'bg-red-500';
+            return 'bg-gray-300';
+        }
+
+        // Mettre à jour l'état vide
+        function updateEmptyState() {
+            emptyState.style.display = urls.length === 0 ? 'block' : 'none';
+        }
+
+        // Afficher une notification
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            
+            const colors = {
+                success: 'bg-green-500 text-white',
+                error: 'bg-red-500 text-white',
+                warning: 'bg-yellow-500 text-white',
+                info: 'bg-blue-500 text-white'
+            };
+            
+            const icons = {
+                success: `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                </svg>`,
+                error: `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>`,
+                warning: `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.268 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                </svg>`,
+                info: `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>`
+            };
+            
+            notification.className = `${colors[type]} px-4 py-3 rounded-xl shadow-lg flex items-center gap-3 max-w-sm animate-slide-up`;
+            notification.innerHTML = `
+                ${icons[type]}
+                <span class="text-sm font-medium">${message}</span>
+                <button onclick="this.parentElement.remove()" class="ml-2 hover:bg-white/20 rounded p-1 transition-colors">
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            `;
+            
+            document.getElementById('notificationContainer').appendChild(notification);
+            
+            // Auto-remove après 5 secondes
+            setTimeout(() => {
+                if (notification.parentElement) {
+                    notification.classList.add('animate-fade-out');
+                    setTimeout(() => notification.remove(), 300);
+                }
+            }, 5000);
+        }
+
+        // Gestion des erreurs globales
+        window.addEventListener('unhandledrejection', (event) => {
+            console.error('Erreur non gérée:', event.reason);
+            showNotification('Une erreur inattendue s\'est produite', 'error');
+        });
+
+        window.addEventListener('error', (event) => {
+            console.error('Erreur:', event.error);
+            showNotification('Une erreur s\'est produite', 'error');
+        });
+
+        // Nettoyage avant fermeture
+        window.addEventListener('beforeunload', () => {
+            if (monitoringInterval) {
+                clearInterval(monitoringInterval);
+            }
+        });
+    </script>
+</body>
+</html>
